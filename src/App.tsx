@@ -1,11 +1,15 @@
 import "./styles/theme.css";
 import "./styles/global.css";
-import Heading from "./components/Heading";
+import { Container } from "./components/Container";
+import { Heading } from "./components/Heading";
+import { Logo } from "./components/Logo";
 
 export default function App() {
   return (
     <>
-      <Heading>Olá mundo</Heading>
+      <Container>
+        <Logo />
+      </Container>
     </>
   );
 }
