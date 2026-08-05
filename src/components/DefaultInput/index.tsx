@@ -1,13 +1,15 @@
+import styles from "./styles.module.css";
+
 type DefaultInputProps = {
   id: string;
   labelText?: string;
 } & React.ComponentProps<"input">;
 
-export function DefaultInput({ id, type, labelText }: DefaultInputProps) {
+export function DefaultInput({ id, type, labelText, ...rest }: DefaultInputProps) {
   return (
     <>
       {labelText && <label htmlFor={id}>{labelText}</label>}
-      <input type={type} name={id} id={id} />
+      <input className={styles.input} type={type} name={id} id={id} {...rest} />
     </>
   );
 }
