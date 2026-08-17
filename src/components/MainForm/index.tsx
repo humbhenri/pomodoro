@@ -8,6 +8,7 @@ import { getNextCycle } from "../../utils/getNextCycle";
 import { useTaskContext } from "../../context/TaskContext";
 import { getNextCycleType } from "../../utils/getNextCycleType";
 import { initialTaskState } from "../../context/initialTaskState";
+import { formatSecodsToMinutes } from "../../utils/timeFormatter";
 
 export function MainForm() {
   const taskNameInput = useRef<HTMLInputElement>(null);
@@ -43,7 +44,7 @@ export function MainForm() {
         activeTask: newTask,
         currentCycle: nextCycle,
         secondsRemaining,
-        formatedSecondsRemaining: "00:00", // TODO
+        formattedSecondsRemaining: formatSecodsToMinutes(secondsRemaining),
         tasks: [...prev.tasks, newTask],
       };
     });
