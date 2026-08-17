@@ -6,14 +6,16 @@ import { DefaultInput } from "../DefaultInput";
 import type { TaskModel } from "../../models/TaskModel";
 import { getNextCycle } from "../../utils/getNextCycle";
 import { useTaskContext } from "../../context/TaskContext";
+import { getNextCycleType } from "../../utils/getNextCycleType";
+import { initialTaskState } from "../../context/initialTaskState";
 
 export function MainForm() {
   const taskNameInput = useRef<HTMLInputElement>(null);
-  const {state, setState}= useTaskContext();
+  const { state, setState } = useTaskContext();
   const numero = useRef<number>(0);
 
   const nextCycle = getNextCycle(state.currentCycle);
-  console.log("Next cycle: ", nextCycle);
+  const workType = getNextCycleType(nextCycle);
 
   const submit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,12 +24,6 @@ export function MainForm() {
     if (!taskName?.length) {
       return;
     }
-    console.log(
-      "Form submitted with task number ",
-      numero.current,
-      ":",
-      taskName,
-    );
 
     const newTask: TaskModel = {
       id: Date.now().toString(),
@@ -35,22 +31,22 @@ export function MainForm() {
       startDate: Date.now(),
       completedDate: null,
       interruptedDate: null,
-      duration: 1,
-      type: 'workTime'
+      duration: initialTaskState.config[workType],
+      type: workType,
     };
 
     const secondsRemaining = newTask.duration * 60;
 
-    setState(prev => {
+    setState((prev) => {
       return {
         ...prev,
         activeTask: newTask,
         currentCycle: nextCycle,
         secondsRemaining,
-        formatedSecondsRemaining: '00:00', // TODO
+        formatedSecondsRemaining: "00:00", // TODO
         tasks: [...prev.tasks, newTask],
-      }
-    })
+      };
+    });
   };
 
   return (
