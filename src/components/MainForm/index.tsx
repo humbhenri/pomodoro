@@ -63,13 +63,22 @@ export function MainForm() {
       </div>
       <div className="formRow">
         <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-          voluptatum.
+          Próximo intervalo é de{" "}
+          {formatSecodsToMinutes(initialTaskState.config[workType] * 60)}{" "}
+          minutos de{" "}
+          {workType === "workTime"
+            ? "trabalho"
+            : workType === "shortBreakTime"
+              ? "pausa curta"
+              : "pausa longa"}
+          .
         </p>
       </div>
-      <div className="formRow">
-        <Cycles />
-      </div>
+      {state.currentCycle > 0 && (
+        <div className="formRow">
+          <Cycles />
+        </div>
+      )}
       <div className="formRow">
         <DefaultButton type="submit" icon={<PlayCircleIcon />} />
       </div>
