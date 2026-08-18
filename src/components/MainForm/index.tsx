@@ -1,4 +1,4 @@
-import { PlayCircleIcon } from "lucide-react";
+import { PlayCircleIcon, StopCircleIcon } from "lucide-react";
 import React, { useRef } from "react";
 import { Cycles } from "../Cycles";
 import { DefaultButton } from "../DefaultButton";
@@ -50,6 +50,26 @@ export function MainForm() {
     });
   };
 
+  const handleInterruptTask = () => {
+    setState((prev) => {
+      return {
+        ...prev,
+        activeTask: null,
+        secondsRemaining: 0,
+        formattedSecondsRemaining: formatSecodsToMinutes(0),
+        tasks: prev.tasks.map((task) => {
+          if (task.id === prev.activeTask?.id) {
+            return {
+              ...task,
+              interruptedDate: Date.now(),
+            };
+          }
+          return task;
+        }),
+      };
+    });
+  };
+
   return (
     <form className="form" action="" onSubmit={submit}>
       <div className="formRow">
@@ -59,6 +79,7 @@ export function MainForm() {
           labelText="Task"
           placeholder="Name your task"
           ref={taskNameInput}
+          disabled={!!state.activeTask}
         />
       </div>
       <div className="formRow">
@@ -80,7 +101,23 @@ export function MainForm() {
         </div>
       )}
       <div className="formRow">
-        <DefaultButton type="submit" icon={<PlayCircleIcon />} />
+        {!state.activeTask ? (
+          <DefaultButton
+            type="submit"
+            icon={<PlayCircleIcon />}
+            title="Iniciar tarefa"
+            key="SubmitButton"
+          />
+        ) : (
+          <DefaultButton
+            type="button"
+            icon={<StopCircleIcon />}
+            title="Parar tarefa"
+            color="red"
+            onClick={handleInterruptTask}
+            key="InterruptButton"
+          />
+        )}
       </div>
     </form>
   );
