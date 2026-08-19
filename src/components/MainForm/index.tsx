@@ -1,15 +1,14 @@
 import { PlayCircleIcon, StopCircleIcon } from "lucide-react";
 import React, { useRef } from "react";
+import { initialTaskState } from "../../context/initialTaskState";
+import { TaskActionTypes } from "../../context/taskActions";
+import { useTaskContext } from "../../context/TaskContext";
+import type { TaskModel } from "../../models/TaskModel";
+import { getNextCycle } from "../../utils/getNextCycle";
+import { getNextCycleType } from "../../utils/getNextCycleType";
 import { Cycles } from "../Cycles";
 import { DefaultButton } from "../DefaultButton";
 import { DefaultInput } from "../DefaultInput";
-import type { TaskModel } from "../../models/TaskModel";
-import { getNextCycle } from "../../utils/getNextCycle";
-import { useTaskContext } from "../../context/TaskContext";
-import { getNextCycleType } from "../../utils/getNextCycleType";
-import { initialTaskState } from "../../context/initialTaskState";
-import { formatSecodsToMinutes } from "../../utils/timeFormatter";
-import { TaskActionTypes } from "../../context/taskActions";
 
 export function MainForm() {
   const taskNameInput = useRef<HTMLInputElement>(null);
