@@ -9,10 +9,11 @@ import { useTaskContext } from "../../context/TaskContext";
 import { getNextCycleType } from "../../utils/getNextCycleType";
 import { initialTaskState } from "../../context/initialTaskState";
 import { formatSecodsToMinutes } from "../../utils/timeFormatter";
+import { TaskActionTypes } from "../../context/taskActions";
 
 export function MainForm() {
   const taskNameInput = useRef<HTMLInputElement>(null);
-  const { state, setState } = useTaskContext();
+  const { state, dispatch } = useTaskContext();
   const numero = useRef<number>(0);
 
   const nextCycle = getNextCycle(state.currentCycle);
@@ -36,38 +37,11 @@ export function MainForm() {
       type: workType,
     };
 
-    const secondsRemaining = newTask.duration * 60;
-
-    setState((prev) => {
-      return {
-        ...prev,
-        activeTask: newTask,
-        currentCycle: nextCycle,
-        secondsRemaining,
-        formattedSecondsRemaining: formatSecodsToMinutes(secondsRemaining),
-        tasks: [...prev.tasks, newTask],
-      };
-    });
+    dispatch({ type: TaskActionTypes.START_TASK, payload: newTask });
   };
 
   const handleInterruptTask = () => {
-    setState((prev) => {
-      return {
-        ...prev,
-        activeTask: null,
-        secondsRemaining: 0,
-        formattedSecondsRemaining: formatSecodsToMinutes(0),
-        tasks: prev.tasks.map((task) => {
-          if (task.id === prev.activeTask?.id) {
-            return {
-              ...task,
-              interruptedDate: Date.now(),
-            };
-          }
-          return task;
-        }),
-      };
-    });
+    dispatch({ type: TaskActionTypes.INTERRUPT_TASK });
   };
 
   return (
