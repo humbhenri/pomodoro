@@ -39,7 +39,6 @@ export function taskReducer(
       };
     }
     case TaskActionTypes.COUNT_DOWN: {
-      console.log(action.payload.secondsRemaining)
       return {
         ...state,
         secondsRemaining: action.payload.secondsRemaining,
