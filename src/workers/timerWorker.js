@@ -1,33 +1,24 @@
 let isRunning = false;
-let timerId = null;
 
-self.onmessage = (event) => {
-  console.log("Mensagem recebida do main thread: ", event.data);
-
-  const state = event.data;
-
-  if (!state || !state.activeTask) {
-    console.log("Worker: nenhuma tarefa ativa, ignorando.");
-    return;
-  }
-
+self.onmessage = function (event) {
   if (isRunning) return;
+
   isRunning = true;
 
-  const { activeTask } = state;
-  const endDate = activeTask.startDate + activeTask.duration * 1000;
+  const state = event.data;
+  const { activeTask, secondsRemaining } = state;
+
+  const endDate = activeTask.startDate + secondsRemaining * 1000;
+  const now = Date.now();
+  let countDownSeconds = Math.ceil((endDate - now) / 1000);
 
   function tick() {
-    const now = Date.now();
-    const countDownSeconds = Math.floor((endDate - now) / 1000);
     self.postMessage(countDownSeconds);
 
-    if (countDownSeconds <= 0) {
-      isRunning = false;
-      return;
-    }
+    const now = Date.now();
+    countDownSeconds = Math.floor((endDate - now) / 1000);
 
-    timerId = setTimeout(tick, 1000);
+    setTimeout(tick, 1000);
   }
 
   tick();

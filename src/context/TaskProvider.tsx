@@ -1,60 +1,62 @@
-import { useEffect, useReducer, useRef } from "react";
-import { TaskContext } from "./TaskContext";
-import { initialTaskState } from "./initialTaskState";
-import { taskReducer } from "./taskReducer";
-import { TimerWorkerManager } from "../workers/TimerWorkerManager";
+import { useEffect, useReducer } from 'react';
+import type { TaskStateModel } from '../models/TaskStateModel';
+import { TimerWorkerManager } from '../workers/TimerWorkerManager';
+import { initialTaskState } from './initialTaskState';
+import { TaskActionTypes } from './taskActions';
+import { TaskContext } from './TaskContext';
+import { taskReducer } from './taskReducer';
+
 
 type TaskContextProviderProps = {
   children: React.ReactNode;
 };
 
 export function TaskContextProvider({ children }: TaskContextProviderProps) {
-  const [state, dispatch] = useReducer(taskReducer, initialTaskState);
-  const workerRef = useRef<TimerWorkerManager | null>(null);
+  const [state, dispatch] = useReducer(taskReducer, initialTaskState, () => {
+    const storageState = localStorage.getItem('state');
 
-  useEffect(() => {
-    const worker = TimerWorkerManager.getInstance();
-    workerRef.current = worker;
+    if (storageState === null) return initialTaskState;
 
-    worker.onMessage((event) => {
-      const countDownSeconds = event.data;
-      console.log("Mensagem recebida do worker: ", countDownSeconds);
-      if (countDownSeconds <= 0) {
-        console.log("Task completed");
-        worker.terminate();
-        workerRef.current = null;
-      }
-    });
+    const parsedStorageState = JSON.parse(storageState) as TaskStateModel;
 
-    return () => {
-      worker.terminate();
-      workerRef.current = null;
+    return {
+      ...parsedStorageState,
+      activeTask: null,
+      secondsRemaining: 0,
+      formattedSecondsRemaining: '00:00',
     };
-  }, []);
+  });
+
+  const worker = TimerWorkerManager.getInstance();
+
+  worker.onmessage(e => {
+    const countDownSeconds = e.data;
+    console.log(countDownSeconds);
+
+    if (countDownSeconds <= 0) {      
+      dispatch({
+        type: TaskActionTypes.COMPLETE_TASK,
+      });
+      worker.terminate();
+    } else {
+      dispatch({
+        type: TaskActionTypes.COUNT_DOWN,
+        payload: { secondsRemaining: countDownSeconds },
+      });
+    }
+  });
 
   useEffect(() => {
-    console.log("Estado atualizado: ", state);
+    localStorage.setItem('state', JSON.stringify(state));
 
     if (!state.activeTask) {
-      console.log("Nenhuma tarefa ativa.");
-      return;
+      worker.terminate();
     }
 
-    const worker = workerRef.current ?? TimerWorkerManager.getInstance();
-    workerRef.current = worker;
-
-    worker.onMessage((event) => {
-      const countDownSeconds = event.data;
-      console.log("Mensagem recebida do worker: ", countDownSeconds);
-      if (countDownSeconds <= 0) {
-        console.log("Task completed");
-        worker.terminate();
-        workerRef.current = null;
-      }
-    });
+    document.title = `${state.formattedSecondsRemaining} - Chronos Pomodoro`;
 
     worker.postMessage(state);
-  }, [state]);
+  }, [worker, state]);
 
   return (
     <TaskContext.Provider value={{ state, dispatch }}>

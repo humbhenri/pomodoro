@@ -38,6 +38,33 @@ export function taskReducer(
         }),
       };
     }
+    case TaskActionTypes.COUNT_DOWN: {
+      console.log(action.payload.secondsRemaining)
+      return {
+        ...state,
+        secondsRemaining: action.payload.secondsRemaining,
+        formattedSecondsRemaining: formatSecodsToMinutes(
+          action.payload.secondsRemaining,
+        ),
+      };
+    }
+    case TaskActionTypes.COMPLETE_TASK: {
+      return {
+        ...state,
+        secondsRemaining: 0,
+        formattedSecondsRemaining: formatSecodsToMinutes(0),
+        activeTask: null,
+        tasks: state.tasks.map((task) => {
+          if (task.id === state.activeTask?.id) {
+            return {
+              ...task,
+              completedDate: Date.now(),
+            };
+          }
+          return task;
+        }),
+      };
+    }
     default:
       return state;
   }
