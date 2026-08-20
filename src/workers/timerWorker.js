@@ -1,11 +1,13 @@
 let isRunning = false;
 
 self.onmessage = function (event) {
+  const state = event.data;
+
+  if (!state || !state.activeTask) return;
   if (isRunning) return;
 
   isRunning = true;
 
-  const state = event.data;
   const { activeTask, secondsRemaining } = state;
 
   const endDate = activeTask.startDate + secondsRemaining * 1000;
@@ -14,6 +16,11 @@ self.onmessage = function (event) {
 
   function tick() {
     self.postMessage(countDownSeconds);
+
+    if (countDownSeconds <= 0) {
+      isRunning = false;
+      return;
+    }
 
     const now = Date.now();
     countDownSeconds = Math.floor((endDate - now) / 1000);

@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import type { TaskStateModel } from '../models/TaskStateModel';
 import { TimerWorkerManager } from '../workers/TimerWorkerManager';
 import { initialTaskState } from './initialTaskState';
@@ -27,36 +27,49 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
     };
   });
 
-  const worker = TimerWorkerManager.getInstance();
+  const workerRef = useRef<TimerWorkerManager | null>(null);
 
-  worker.onmessage(e => {
-    const countDownSeconds = e.data;
-    console.log(countDownSeconds);
-
-    if (countDownSeconds <= 0) {      
-      dispatch({
-        type: TaskActionTypes.COMPLETE_TASK,
-      });
-      worker.terminate();
-    } else {
-      dispatch({
-        type: TaskActionTypes.COUNT_DOWN,
-        payload: { secondsRemaining: countDownSeconds },
-      });
+  function getWorker() {
+    if (!workerRef.current) {
+      workerRef.current = TimerWorkerManager.getInstance();
     }
-  });
+    return workerRef.current;
+  }
 
   useEffect(() => {
     localStorage.setItem('state', JSON.stringify(state));
-
-    if (!state.activeTask) {
-      worker.terminate();
-    }
-
     document.title = `${state.formattedSecondsRemaining} - Chronos Pomodoro`;
 
+    if (!state.activeTask) {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
+      return;
+    }
+
+    const worker = getWorker();
+
+    worker.onmessage(e => {
+      const countDownSeconds = e.data;
+      console.log(countDownSeconds);
+
+      if (countDownSeconds <= 0) {
+        dispatch({
+          type: TaskActionTypes.COMPLETE_TASK,
+        });
+        worker.terminate();
+        workerRef.current = null;
+      } else {
+        dispatch({
+          type: TaskActionTypes.COUNT_DOWN,
+          payload: { secondsRemaining: countDownSeconds },
+        });
+      }
+    });
+
     worker.postMessage(state);
-  }, [worker, state]);
+  }, [state]);
 
   return (
     <TaskContext.Provider value={{ state, dispatch }}>
