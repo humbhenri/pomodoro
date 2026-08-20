@@ -9,6 +9,7 @@ import { getNextCycleType } from "../../utils/getNextCycleType";
 import { Cycles } from "../Cycles";
 import { DefaultButton } from "../DefaultButton";
 import { DefaultInput } from "../DefaultInput";
+import { dismiss, showMessage } from "../../adapters/showMessage";
 
 export function MainForm() {
   const taskNameInput = useRef<HTMLInputElement>(null);
@@ -30,9 +31,11 @@ export function MainForm() {
 
   const submit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    dismiss();
     numero.current += 1;
     const taskName = taskNameInput.current?.value?.trim();
     if (!taskName?.length) {
+      showMessage("Por favor, preencha o nome da tarefa", "warning");
       return;
     }
 
@@ -47,10 +50,12 @@ export function MainForm() {
     };
 
     dispatch({ type: TaskActionTypes.START_TASK, payload: newTask });
+    showMessage(`Tarefa "${taskName}" iniciada!`, "success");
   };
 
   const handleInterruptTask = () => {
     dispatch({ type: TaskActionTypes.INTERRUPT_TASK });
+    showMessage("Tarefa interrompida!", "info");
   };
 
   return (
