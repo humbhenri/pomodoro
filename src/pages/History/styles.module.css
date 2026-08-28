@@ -21,6 +21,11 @@
 
     & th {
         background-color: var(--gray-600);
+        cursor: pointer;
+        transition: all 0.1s ease-in-out;
+        &:hover {
+          filter: brightness(80%);
+        }
     }
 
     & td {
@@ -33,3 +38,4 @@
         padding: 1.6rem;
     }
 }
+

@@ -8,6 +8,8 @@ import styles from "./styles.module.css";
 import { useTaskContext } from "../../context/TaskContext";
 import { formatDate } from "../../utils/timeFormatter";
 import { getTaskStatus } from "../../utils/getTaskStatus";
+import { sortTasks, type SortTaskOptions } from "../../utils/sortTasks";
+import { useState } from "react";
 
 export function History() {
   const { state } = useTaskContext();
@@ -17,6 +19,21 @@ export function History() {
     shortBreakTime: "Descanso curto",
     longBreakTime: "Descanso longo",
   };
+
+  const [sortTasksOptions, setSortTaskOptions] = useState<SortTaskOptions>(() => {
+    return { field: 'startDate', direction: 'desc', tasks: sortTasks({ tasks: state.tasks }) };
+  });
+
+  function handleSortTasks({ field }: Omit<SortTaskOptions, 'tasks' | 'direction'>) {
+    const newDirection = sortTasksOptions.direction == 'desc' ? 'asc' : 'desc';
+    setSortTaskOptions({
+      direction: newDirection, tasks: sortTasks({
+        field,
+        direction: newDirection,
+        tasks: sortTasksOptions.tasks,
+      }), field
+    });
+  }
 
   return (
     <MainTemplate>
@@ -37,15 +54,15 @@ export function History() {
           <table>
             <thead>
               <tr>
-                <th>Tarefa</th>
-                <th>Duração</th>
-                <th>Data</th>
+                <th onClick={() => handleSortTasks({ field: 'name' })}>Tarefa ↕</th>
+                <th onClick={() => handleSortTasks({ field: 'duration' })}>Duração ↕</th>
+                <th onClick={() => handleSortTasks({ field: 'startDate' })}>Data ↕</th>
                 <th>Status</th>
-                <th>Tipo</th>
+                <th onClick={() => handleSortTasks({ field: 'type' })}>Tipo ↕</th>
               </tr>
             </thead>
             <tbody>
-              {state.tasks.reverse().map((task) => (
+              {sortTasksOptions.tasks.map((task) => (
                 <tr key={task.id}>
                   <td>{task.name}</td>
                   <td>{task.duration}min</td>
